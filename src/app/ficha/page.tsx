@@ -2,20 +2,24 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { carregar } from "@/lib/dados";
+import { repo } from "@/lib/dados";
 import type { Entrega, Funcionario } from "@/lib/tipos";
 
 function Ficha() {
   const id = useSearchParams().get("f");
   const [pessoa, setPessoa] = useState<Funcionario | null>(null);
   const [entregas, setEntregas] = useState<Entrega[]>([]);
+  const [carregado, setCarregado] = useState(false);
 
   useEffect(() => {
-    const b = carregar();
-    setPessoa(b.funcionarios.find((f) => f.id === id) ?? null);
-    setEntregas(b.entregas.filter((e) => e.funcionarioId === id));
+    repo.listar().then((b) => {
+      setPessoa(b.funcionarios.find((f) => f.id === id) ?? null);
+      setEntregas(b.entregas.filter((e) => e.funcionarioId === id));
+      setCarregado(true);
+    });
   }, [id]);
 
+  if (!carregado) return <main className="pagina"><p className="suave">Carregando…</p></main>;
   if (!pessoa) return <main className="pagina"><p>Funcionário não encontrado.</p></main>;
 
   return (

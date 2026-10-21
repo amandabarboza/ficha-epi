@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { carregar, verificarCadeia } from "@/lib/dados";
+import { repo, verificarCadeia } from "@/lib/dados";
 import type { Entrega, Funcionario } from "@/lib/tipos";
 
 export default function Historico() {
@@ -11,10 +11,12 @@ export default function Historico() {
   const [integra, setIntegra] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const b = carregar();
-    setFuncionarios(b.funcionarios);
-    setEntregas(b.entregas);
-    verificarCadeia(b.entregas).then(setIntegra);
+    repo.listar().then((b) => {
+      setFuncionarios(b.funcionarios);
+      setEntregas(b.entregas);
+      // No servidor o encadeamento é garantido pelo banco; aqui confere a cópia local.
+      if (!repo.comServidor) verificarCadeia(b.entregas).then(setIntegra);
+    });
   }, []);
 
   return (

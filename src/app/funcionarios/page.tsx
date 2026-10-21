@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { cadastrarFuncionario, carregar } from "@/lib/dados";
+import { repo } from "@/lib/dados";
 import type { Funcionario } from "@/lib/tipos";
 
 export default function Funcionarios() {
@@ -10,9 +10,12 @@ export default function Funcionarios() {
   const [erro, setErro] = useState("");
   const [form, setForm] = useState({ nome: "", matricula: "", funcao: "", pin: "" });
 
-  useEffect(() => setLista(carregar().funcionarios), []);
+  function recarregar() {
+    repo.listar().then((b) => setLista(b.funcionarios)).catch((e: Error) => setErro(e.message));
+  }
+  useEffect(recarregar, []);
 
-  function salvar(e: React.FormEvent) {
+  async function salvar(e: React.FormEvent) {
     e.preventDefault();
     setErro("");
     if (!/^\d{4}$/.test(form.pin)) {
@@ -20,8 +23,8 @@ export default function Funcionarios() {
       return;
     }
     try {
-      cadastrarFuncionario({ ...form, nome: form.nome.trim() });
-      setLista(carregar().funcionarios);
+      await repo.cadastrarFuncionario({ ...form, nome: form.nome.trim() });
+      recarregar();
       setForm({ nome: "", matricula: "", funcao: "", pin: "" });
       setNovo(false);
     } catch (err) {

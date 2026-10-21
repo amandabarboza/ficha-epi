@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Assinatura } from "@/components/Assinatura";
 import { TecladoPin } from "@/components/TecladoPin";
-import { carregar, caVencido, registrarEntrega } from "@/lib/dados";
+import { caVencido, repo } from "@/lib/dados";
 import { lerSessao } from "@/lib/sessao";
 import type { Entrega, Epi, Funcionario } from "@/lib/tipos";
 
@@ -28,9 +28,12 @@ export default function Retirada() {
   const [recibo, setRecibo] = useState<Entrega | null>(null);
 
   function recarregar() {
-    const b = carregar();
-    setFuncionarios(b.funcionarios);
-    setEpis(b.epis);
+    repo.listar()
+      .then((b) => {
+        setFuncionarios(b.funcionarios);
+        setEpis(b.epis);
+      })
+      .catch((e: Error) => setErro(e.message));
   }
   useEffect(recarregar, []);
 
@@ -52,16 +55,20 @@ export default function Retirada() {
     recarregar();
   }
 
-  function confirmarPin(valor: string) {
+  async function confirmarPin(valor: string) {
     setPin(valor);
     setErro("");
     if (valor.length < 4 || !pessoa) return;
-    if (valor === pessoa.pin) {
-      setPasso("assinar");
-    } else {
+    try {
+      if (await repo.verificarPin(pessoa.id, valor)) {
+        setPasso("assinar");
+        return;
+      }
       setErro("PIN incorreto. Tente de novo.");
-      setTimeout(() => setPin(""), 400);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Não foi possível conferir o PIN.");
     }
+    setTimeout(() => setPin(""), 400);
   }
 
   async function concluir() {
@@ -69,7 +76,7 @@ export default function Retirada() {
     setSalvando(true);
     setErro("");
     try {
-      const r = await registrarEntrega({
+      const r = await repo.registrarEntrega({
         funcionarioId: pessoa.id,
         epiId: epi.id,
         tipo: "entrega",
@@ -100,6 +107,7 @@ export default function Retirada() {
         <section>
           <h1>Quem vai receber?</h1>
           <p className="suave">Toque no nome do funcionário.</p>
+          {erro && <div className="aviso-caixa erro" role="alert">{erro}</div>}
           <label className="campo">
             <span className="suave">Buscar por nome ou matrícula</span>
             <input type="search" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Digite aqui" />

@@ -16,9 +16,10 @@ PWA para controle de entrega de EPIs, pensado para uso no celular por quem não 
 |---|---|
 | Telas: entrega, pessoas, EPIs, fichas, ficha para imprimir/PDF | Feitas |
 | PWA (manifest, ícones, service worker) | Feito |
-| Dados | **Demonstração:** ficam no navegador (`src/lib/dados.ts`) |
+| Dados | Supabase quando configurado; sem configuração, modo demonstração no navegador (`src/lib/dados.ts`) |
 | Banco no Supabase (`supabase/migrations/0001_init.sql`) | Escrito e testado em Postgres local: registro imutável, hash encadeado, PIN com bloqueio, isolamento por empresa |
-| Ligar o app ao Supabase (Auth, Storage, sync offline) | Próximo passo |
+| Ligar o app ao Supabase: login por e-mail e senha, dados, assinatura no Storage | Código pronto, falta testar num projeto real |
+| Fila offline com sincronização | Próximo passo |
 | Face ID / digital (WebAuthn) para o almoxarife | Próximo passo |
 | Foto de evidência (com consentimento LGPD) | Próximo passo |
 | Alertas e relatórios por período | Próximo passo |
@@ -31,6 +32,14 @@ PWA para controle de entrega de EPIs, pensado para uso no celular por quem não 
 - CA vencido e estoque insuficiente são recusados no banco, não só na tela.
 - O PIN só existe como hash (`crypt`), com bloqueio de 15 minutos após 5 erros. O hash nunca é legível pelo app.
 - Cada usuário só enxerga a própria empresa (RLS).
+
+## Ligar ao Supabase
+
+1. Crie um projeto em supabase.com (região São Paulo).
+2. No SQL Editor, rode em ordem `supabase/migrations/0001_init.sql` e `0002_assinaturas.sql`.
+3. Crie o primeiro usuário e empresa com `supabase/primeiro-acesso.sql`.
+4. Copie `.env.example` para `.env.local` e preencha URL e chave `anon` (Project Settings > API).
+   Na Vercel, cadastre as mesmas duas variáveis.
 
 ## Desenvolvimento
 

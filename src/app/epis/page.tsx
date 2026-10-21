@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { cadastrarEpi, carregar, caVencido, diasParaVencer } from "@/lib/dados";
+import { caVencido, diasParaVencer, repo } from "@/lib/dados";
 import type { Epi } from "@/lib/tipos";
 
 export default function Epis() {
@@ -9,21 +9,31 @@ export default function Epis() {
   const [novo, setNovo] = useState(false);
   const [form, setForm] = useState({ nome: "", ca: "", validadeCa: "", lote: "", estoque: "", estoqueMinimo: "" });
 
-  useEffect(() => setLista(carregar().epis), []);
+  const [erro, setErro] = useState("");
 
-  function salvar(e: React.FormEvent) {
+  function recarregar() {
+    repo.listar().then((b) => setLista(b.epis)).catch((e: Error) => setErro(e.message));
+  }
+  useEffect(recarregar, []);
+
+  async function salvar(e: React.FormEvent) {
     e.preventDefault();
-    cadastrarEpi({
+    setErro("");
+    try {
+      await repo.cadastrarEpi({
       nome: form.nome.trim(),
       ca: form.ca.trim(),
       validadeCa: form.validadeCa,
       lote: form.lote.trim(),
       estoque: Number(form.estoque) || 0,
-      estoqueMinimo: Number(form.estoqueMinimo) || 0,
-    });
-    setLista(carregar().epis);
-    setForm({ nome: "", ca: "", validadeCa: "", lote: "", estoque: "", estoqueMinimo: "" });
-    setNovo(false);
+        estoqueMinimo: Number(form.estoqueMinimo) || 0,
+      });
+      recarregar();
+      setForm({ nome: "", ca: "", validadeCa: "", lote: "", estoque: "", estoqueMinimo: "" });
+      setNovo(false);
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Não foi possível salvar.");
+    }
   }
 
   const alertas = lista.filter((e) => caVencido(e) || diasParaVencer(e) <= 30 || e.estoque <= e.estoqueMinimo);
@@ -42,6 +52,7 @@ export default function Epis() {
       {novo ? (
         <form onSubmit={salvar} className="cartao">
           <h2>Novo EPI</h2>
+          {erro && <div className="aviso-caixa erro" role="alert">{erro}</div>}
           <label className="campo"><span>Nome</span><input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} required /></label>
           <label className="campo"><span>Número do CA</span><input inputMode="numeric" value={form.ca} onChange={(e) => setForm({ ...form, ca: e.target.value })} required /></label>
           <label className="campo"><span>Validade do CA</span><input type="date" value={form.validadeCa} onChange={(e) => setForm({ ...form, validadeCa: e.target.value })} required /></label>

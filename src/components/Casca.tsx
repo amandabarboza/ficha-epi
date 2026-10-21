@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { lerSessao } from "@/lib/sessao";
+import { temSessao } from "@/lib/sessao";
 
 const ABAS = [
   { href: "/retirada", rotulo: "Entregar", icone: "M12 3v12m0 0-4-4m4 4 4-4M5 19h14" },
@@ -25,11 +25,15 @@ export function Casca({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!publica && !lerSessao()) {
-      roteador.replace("/entrar");
-      return;
-    }
-    setPronto(true);
+    let ativo = true;
+    temSessao().then((ok) => {
+      if (!ativo) return;
+      if (!publica && !ok) roteador.replace("/entrar");
+      else setPronto(true);
+    });
+    return () => {
+      ativo = false;
+    };
   }, [publica, roteador, caminho]);
 
   if (!publica && !pronto) return null;
