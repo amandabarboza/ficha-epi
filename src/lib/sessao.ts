@@ -39,6 +39,13 @@ export async function temSessao(): Promise<boolean> {
 
 export async function entrarComSenha(email: string, senha: string): Promise<void> {
   const { supabase } = await import("./supabase");
-  const { error } = await supabase().auth.signInWithPassword({ email, password: senha });
+  const { data, error } = await supabase().auth.signInWithPassword({ email, password: senha });
   if (error) throw new Error("E-mail ou senha incorretos.");
+
+  // Sem empresa o app não tem o que mostrar: barra já na entrada, não no meio de um cadastro.
+  const { data: usuario } = await supabase().from("usuarios").select("id").eq("id", data.user.id).maybeSingle();
+  if (!usuario) {
+    await supabase().auth.signOut();
+    throw new Error("Este acesso ainda não foi liberado para nenhuma empresa. Fale com o responsável pela segurança do trabalho.");
+  }
 }
