@@ -5,7 +5,8 @@ export const CONSULTORIA = {
   logo: "/marca/logo-sol.png",
   cnpj: "",
   endereco: "",
-  telefone: "",
+  telefone: "(16) 99353-4846",
   email: "",
-  site: "www.solengenhariadeseguranca.com.br",
+  site: "solengenhariadeseguranca.com.br",
+  instagram: "@solengenhariadeseguranca",
 };

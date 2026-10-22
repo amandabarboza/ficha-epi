@@ -27,7 +27,12 @@ function Ficha() {
   if (!carregado) return <main className="pagina"><p className="suave">Carregando…</p></main>;
   if (!pessoa) return <main className="pagina"><p>Funcionário não encontrado.</p></main>;
 
-  const contato = [CONSULTORIA.telefone, CONSULTORIA.email, CONSULTORIA.site].filter(Boolean).join(" · ");
+  const contato = [
+    CONSULTORIA.telefone && `WhatsApp ${CONSULTORIA.telefone}`,
+    CONSULTORIA.email,
+    CONSULTORIA.site,
+    CONSULTORIA.instagram,
+  ].filter(Boolean).join(" · ");
 
   return (
     <main className="pagina ficha" style={{ maxWidth: 900 }}>
