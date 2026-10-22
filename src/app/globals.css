@@ -197,12 +197,11 @@ p { margin: 0 0 12px; }
 
 /* Cabeçalho da ficha impressa */
 .ficha-topo {
-  display: flex; align-items: center; gap: 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
   border-bottom: 3px solid var(--sol-amarelo); padding-bottom: 10px; margin-bottom: 12px;
 }
-.ficha-topo img { height: 64px; width: auto; }
-.ficha-topo .dados { font-size: 12px; line-height: 1.35; color: var(--cor-texto-suave); }
-.ficha-topo .dados strong { display: block; font-size: 14px; color: var(--cor-texto); }
+.ficha-topo img { height: 72px; width: auto; }
+.ficha-topo .dados { font-style: normal; text-align: right; font-size: 12px; line-height: 1.5; color: var(--cor-texto-suave); }
 .ficha-titulo {
   background: var(--sol-petroleo); color: #fff; text-align: center;
   font-size: 16px; font-weight: 700; padding: 6px; margin: 0 0 10px; border-radius: 4px;
@@ -213,5 +212,5 @@ p { margin: 0 0 12px; }
 .ficha th { background: #eef2f1; }
 @media print {
   .ficha-titulo, .ficha th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .ficha-topo .dados, .ficha-topo .dados strong { color: #000; }
+  .ficha-topo .dados { color: #333; }
 }

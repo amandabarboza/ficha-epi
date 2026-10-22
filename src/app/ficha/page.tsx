@@ -27,12 +27,14 @@ function Ficha() {
   if (!carregado) return <main className="pagina"><p className="suave">Carregando…</p></main>;
   if (!pessoa) return <main className="pagina"><p>Funcionário não encontrado.</p></main>;
 
+  // O logo já traz o nome da consultoria; ao lado vai só o contato, um item por linha.
   const contato = [
-    CONSULTORIA.telefone && `WhatsApp ${CONSULTORIA.telefone}`,
+    CONSULTORIA.telefone,
     CONSULTORIA.email,
     CONSULTORIA.site,
-    CONSULTORIA.instagram,
-  ].filter(Boolean).join(" · ");
+    CONSULTORIA.cnpj && `CNPJ ${CONSULTORIA.cnpj}`,
+    CONSULTORIA.endereco,
+  ].filter(Boolean);
 
   return (
     <main className="pagina ficha" style={{ maxWidth: 900 }}>
@@ -43,12 +45,9 @@ function Ficha() {
       <header className="ficha-topo">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={CONSULTORIA.logo} alt={CONSULTORIA.nome} />
-        <div className="dados">
-          <strong>{CONSULTORIA.nome}</strong>
-          {CONSULTORIA.cnpj && <div>CNPJ {CONSULTORIA.cnpj}</div>}
-          {CONSULTORIA.endereco && <div>{CONSULTORIA.endereco}</div>}
-          {contato && <div>{contato}</div>}
-        </div>
+        <address className="dados">
+          {contato.map((linha) => <div key={linha}>{linha}</div>)}
+        </address>
       </header>
 
       <h1 className="ficha-titulo">Ficha de controle de entrega de EPI</h1>
