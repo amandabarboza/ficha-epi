@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { entrar, entrarComSenha } from "@/lib/sessao";
+import { Icone } from "@/components/ui";
 import { CONSULTORIA } from "@/lib/consultoria";
+import { entrar, entrarComSenha } from "@/lib/sessao";
 import { comServidor } from "@/lib/supabase";
 
 export default function Entrar() {
@@ -35,22 +36,21 @@ export default function Entrar() {
   }
 
   return (
-    <main className="pagina">
-      <div style={{ textAlign: "center", padding: "32px 0 24px" }}>
-        <div className="logo-caixa">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={CONSULTORIA.logo} alt={CONSULTORIA.nome} width={220} height={127} />
-        </div>
-        <h1 style={{ marginTop: 16 }}>Ficha de EPI</h1>
-        <p className="suave">Quem está no almoxarifado agora?</p>
+    <main className="entrar">
+      <div className="entrar-logo">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={CONSULTORIA.logo} alt={CONSULTORIA.nome} width={230} height={133} />
       </div>
-      <form onSubmit={acessar}>
-        {erro && <div className="aviso-caixa erro" role="alert">{erro}</div>}
+      <h1>Ficha de EPI</h1>
+      <p className="suave">Entre para registrar as entregas do almoxarifado.</p>
+
+      <form onSubmit={acessar} className="entrar-cartao">
+        {erro && <div className="aviso-caixa erro" role="alert"><Icone nome="alerta" tamanho={20} />{erro}</div>}
         {comServidor ? (
           <>
             <label className="campo">
               <span>E-mail</span>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />
+              <input type="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />
             </label>
             <label className="campo">
               <span>Senha</span>
@@ -65,12 +65,10 @@ export default function Entrar() {
               <input value={nome} onChange={(e) => setNome(e.target.value)} autoComplete="name" placeholder="Ex.: Ana Lima" required />
             </label>
             <button className="botao" type="submit" disabled={!nome.trim()}>Entrar</button>
-            <p className="suave" style={{ marginTop: 24, fontSize: 15 }}>
-              Versão de demonstração: os dados ficam só neste aparelho.
-            </p>
           </>
         )}
       </form>
+      {!comServidor && <p className="entrar-rodape">Versão de demonstração: os dados ficam só neste aparelho.</p>}
     </main>
   );
 }

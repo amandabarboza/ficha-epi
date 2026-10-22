@@ -1,7 +1,8 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Icone } from "@/components/ui";
 import { CONSULTORIA } from "@/lib/consultoria";
 import { repo, type Empresa } from "@/lib/dados";
 import type { Entrega, Funcionario } from "@/lib/tipos";
@@ -10,6 +11,7 @@ const MOVIMENTO = { entrega: "Entrega", devolucao: "Devolução", troca: "Troca"
 
 function Ficha() {
   const id = useSearchParams().get("f");
+  const roteador = useRouter();
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [pessoa, setPessoa] = useState<Funcionario | null>(null);
   const [entregas, setEntregas] = useState<Entrega[]>([]);
@@ -38,9 +40,15 @@ function Ficha() {
 
   return (
     <main className="pagina ficha" style={{ maxWidth: 900 }}>
-      <button className="botao nao-imprimir" onClick={() => window.print()} style={{ marginBottom: 16 }}>
-        Imprimir ou salvar em PDF
-      </button>
+      <div className="ficha-acoes nao-imprimir">
+        <button type="button" className="botao-icone" onClick={() => roteador.back()} aria-label="Voltar">
+          <Icone nome="voltar" />
+        </button>
+        <button className="botao" onClick={() => window.print()}>
+          <Icone nome="imprimir" /> Imprimir ou salvar PDF
+        </button>
+      </div>
+      <div className="ficha-folha">
 
       <header className="ficha-topo">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -61,10 +69,11 @@ function Ficha() {
         <div><strong>Emitida em:</strong> {new Date().toLocaleDateString("pt-BR")}</div>
       </section>
 
-      <p style={{ fontSize: 13 }}>
+      <p className="ficha-declaracao">
         Declaro ter recebido os equipamentos de proteção individual abaixo, estar orientado quanto ao uso correto e
         comprometo-me a conservá-los e a comunicar qualquer dano.
       </p>
+      <div className="ficha-rolagem">
       <table>
         <thead>
           <tr><th>Data</th><th>Movimento</th><th>EPI</th><th>CA</th><th>Lote</th><th>Qtd</th><th>Assinatura</th></tr>
@@ -85,10 +94,12 @@ function Ficha() {
           ))}
         </tbody>
       </table>
+      </div>
 
       <div className="ficha-assinaturas">
         <div>{pessoa.nome}</div>
         <div>Responsável pela segurança do trabalho</div>
+      </div>
       </div>
     </main>
   );

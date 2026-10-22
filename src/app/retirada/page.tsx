@@ -1,27 +1,40 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Assinatura } from "@/components/Assinatura";
 import { TecladoPin } from "@/components/TecladoPin";
+import { Avatar, Busca, CabecalhoPagina, Icone, Vazio } from "@/components/ui";
 import { caVencido, repo } from "@/lib/dados";
 import { lerSessao } from "@/lib/sessao";
 import type { Entrega, Epi, Funcionario } from "@/lib/tipos";
 
 type Passo = "pessoa" | "epi" | "pin" | "assinar" | "pronto";
+const ETAPAS: { passo: Passo; rotulo: string }[] = [
+  { passo: "pessoa", rotulo: "Pessoa" },
+  { passo: "epi", rotulo: "EPI" },
+  { passo: "pin", rotulo: "PIN" },
+  { passo: "assinar", rotulo: "Assinar" },
+];
 const ORDEM: Passo[] = ["pessoa", "epi", "pin", "assinar", "pronto"];
 
-function iniciais(nome: string) {
-  return nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+// Itens que não podem ser entregues ficam no fim da lista, com o motivo.
+function motivoBloqueio(e: Epi): string | null {
+  if (caVencido(e)) return `CA vencido em ${new Date(e.validadeCa + "T00:00").toLocaleDateString("pt-BR")}`;
+  if (e.estoque <= 0) return "Sem estoque";
+  return null;
 }
 
 export default function Retirada() {
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
   const [epis, setEpis] = useState<Epi[]>([]);
+  const [carregando, setCarregando] = useState(true);
   const [passo, setPasso] = useState<Passo>("pessoa");
   const [busca, setBusca] = useState("");
   const [pessoa, setPessoa] = useState<Funcionario | null>(null);
   const [epi, setEpi] = useState<Epi | null>(null);
   const [pin, setPin] = useState("");
+  const [pinErrado, setPinErrado] = useState(false);
   const [erro, setErro] = useState("");
   const [assinatura, setAssinatura] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -33,7 +46,8 @@ export default function Retirada() {
         setFuncionarios(b.funcionarios);
         setEpis(b.epis);
       })
-      .catch((e: Error) => setErro(e.message));
+      .catch((e: Error) => setErro(e.message))
+      .finally(() => setCarregando(false));
   }
   useEffect(recarregar, []);
 
@@ -43,32 +57,44 @@ export default function Retirada() {
     return funcionarios.filter((f) => f.nome.toLowerCase().includes(t) || f.matricula.includes(t));
   }, [busca, funcionarios]);
 
+  const episOrdenados = useMemo(
+    () => [...epis].sort((a, b) => Number(!!motivoBloqueio(a)) - Number(!!motivoBloqueio(b)) || a.nome.localeCompare(b.nome)),
+    [epis],
+  );
+
+  function irPara(p: Passo) {
+    setErro("");
+    setPin("");
+    setPasso(p);
+    window.scrollTo({ top: 0 });
+  }
+
   function recomecar() {
-    setPasso("pessoa");
     setPessoa(null);
     setEpi(null);
-    setPin("");
-    setErro("");
     setAssinatura(null);
     setRecibo(null);
     setBusca("");
+    irPara("pessoa");
     recarregar();
   }
 
   async function confirmarPin(valor: string) {
     setPin(valor);
     setErro("");
+    setPinErrado(false);
     if (valor.length < 4 || !pessoa) return;
     try {
       if (await repo.verificarPin(pessoa.id, valor)) {
-        setPasso("assinar");
+        irPara("assinar");
         return;
       }
       setErro("PIN incorreto. Tente de novo.");
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Não foi possível conferir o PIN.");
     }
-    setTimeout(() => setPin(""), 400);
+    setPinErrado(true);
+    setTimeout(() => setPin(""), 350);
   }
 
   async function concluir() {
@@ -85,7 +111,7 @@ export default function Retirada() {
         almoxarife: lerSessao() ?? "Almoxarife",
       });
       setRecibo(r);
-      setPasso("pronto");
+      irPara("pronto");
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Não foi possível registrar.");
     } finally {
@@ -94,89 +120,133 @@ export default function Retirada() {
   }
 
   const indice = ORDEM.indexOf(passo);
+  const primeiroNome = pessoa?.nome.split(" ")[0] ?? "";
 
   return (
     <main className="pagina">
-      <div className="passos" aria-hidden="true">
-        {ORDEM.slice(0, 4).map((p, i) => (
-          <i key={p} className={i <= indice ? "feito" : ""} />
-        ))}
-      </div>
+      {passo !== "pronto" && (
+        <ol className="etapas" aria-label={`Passo ${indice + 1} de 4`}>
+          {ETAPAS.map((e, i) => (
+            <li key={e.passo} className={i < indice ? "feita" : i === indice ? "atual" : ""} aria-current={i === indice ? "step" : undefined}>
+              {e.rotulo}
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {erro && passo !== "pin" && (
+        <div className="aviso-caixa erro" role="alert">
+          <Icone nome="alerta" tamanho={20} />
+          {erro}
+        </div>
+      )}
 
       {passo === "pessoa" && (
         <section>
-          <h1>Quem vai receber?</h1>
-          <p className="suave">Toque no nome do funcionário.</p>
-          {erro && <div className="aviso-caixa erro" role="alert">{erro}</div>}
-          <label className="campo">
-            <span className="suave">Buscar por nome ou matrícula</span>
-            <input type="search" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Digite aqui" />
-          </label>
-          {filtrados.length === 0 && <p className="suave">Ninguém encontrado. Cadastre na aba Pessoas.</p>}
-          {filtrados.map((f) => (
-            <button key={f.id} className="cartao-botao" onClick={() => { setPessoa(f); setPasso("epi"); }}>
-              <span className="avatar">{iniciais(f.nome)}</span>
-              <span>
-                <span className="titulo">{f.nome}</span>
-                <span className="detalhe">Matrícula {f.matricula} · {f.funcao}</span>
-              </span>
-            </button>
-          ))}
+          <CabecalhoPagina titulo="Quem vai receber?" subtitulo="Toque no nome do funcionário." />
+          <Busca valor={busca} onMudar={setBusca} rotulo="Buscar por nome ou matrícula" />
+          {!carregando && filtrados.length === 0 ? (
+            <Vazio
+              icone="pessoas"
+              titulo={busca ? "Ninguém encontrado" : "Nenhum funcionário cadastrado"}
+              texto={busca ? "Confira o nome ou a matrícula." : "Cadastre na aba Pessoas."}
+            />
+          ) : (
+            <ul className="lista">
+              {filtrados.map((f) => (
+                <li key={f.id}>
+                  <button className="item" onClick={() => { setPessoa(f); irPara("epi"); }}>
+                    <Avatar nome={f.nome} />
+                    <span className="item-textos">
+                      <span className="item-titulo">{f.nome}</span>
+                      <span className="item-detalhe">Matrícula {f.matricula}{f.funcao && ` · ${f.funcao}`}</span>
+                    </span>
+                    <Icone nome="seta" className="item-seta" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       )}
 
       {passo === "epi" && pessoa && (
         <section>
-          <h1>Qual EPI?</h1>
-          <p className="suave">Para {pessoa.nome}</p>
-          {epis.map((e) => {
-            const vencido = caVencido(e);
-            const semEstoque = e.estoque <= 0;
-            const bloqueado = vencido || semEstoque;
-            return (
-              <button key={e.id} className="cartao-botao" disabled={bloqueado} onClick={() => { setEpi(e); setPasso("pin"); }}>
-                <span style={{ flex: 1 }}>
-                  <span className="titulo">{e.nome}</span>
-                  <span className="detalhe">CA {e.ca} · {e.estoque} em estoque</span>
-                </span>
-                {vencido && <span className="selo erro">CA vencido</span>}
-                {!vencido && semEstoque && <span className="selo erro">Sem estoque</span>}
-              </button>
-            );
-          })}
-          <button className="botao secundario" onClick={recomecar}>Voltar</button>
+          <CabecalhoPagina titulo="Qual EPI?" onVoltar={() => irPara("pessoa")} />
+          <div className="escolha">
+            <Avatar nome={pessoa.nome} />
+            <span className="item-textos">
+              <span className="item-titulo">{pessoa.nome}</span>
+              <span className="item-detalhe">{pessoa.funcao || `Matrícula ${pessoa.matricula}`}</span>
+            </span>
+            <button className="link-trocar" onClick={() => irPara("pessoa")}>Trocar</button>
+          </div>
+          <ul className="lista">
+            {episOrdenados.map((e) => {
+              const motivo = motivoBloqueio(e);
+              return (
+                <li key={e.id}>
+                  <button className="item" disabled={!!motivo} onClick={() => { setEpi(e); irPara("pin"); }}>
+                    <span className="item-icone"><Icone nome="escudo" /></span>
+                    <span className="item-textos">
+                      <span className="item-titulo">{e.nome}</span>
+                      <span className="item-detalhe">CA {e.ca} · {e.estoque} em estoque</span>
+                      {motivo && <span className="item-motivo"><Icone nome="alerta" tamanho={15} />{motivo}</span>}
+                    </span>
+                    {!motivo && <Icone nome="seta" className="item-seta" />}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </section>
       )}
 
       {passo === "pin" && pessoa && epi && (
-        <section>
-          <h1>{pessoa.nome.split(" ")[0]}, digite seu PIN</h1>
-          <p className="suave">Recebendo: {epi.nome}</p>
-          {erro && <div className="aviso-caixa erro" role="alert">{erro}</div>}
-          <TecladoPin valor={pin} onMudar={confirmarPin} />
-          <button className="botao secundario" style={{ marginTop: 24 }} onClick={() => { setPin(""); setPasso("epi"); }}>Voltar</button>
+        <section className="pin">
+          <div className="pin-topo">
+            <button type="button" className="botao-icone" onClick={() => irPara("epi")} aria-label="Voltar">
+              <Icone nome="voltar" />
+            </button>
+            <Avatar nome={pessoa.nome} grande />
+          </div>
+          <h1>{primeiroNome}, digite seu PIN</h1>
+          <p className="suave">Para confirmar: {epi.nome}</p>
+          <p className="pin-erro" role="alert">{erro}</p>
+          <TecladoPin valor={pin} errado={pinErrado} onMudar={confirmarPin} />
         </section>
       )}
 
       {passo === "assinar" && pessoa && epi && (
         <section>
-          <h1>Assine aqui</h1>
-          <p className="suave">Declaro que recebi {epi.nome} (CA {epi.ca}).</p>
-          {erro && <div className="aviso-caixa erro" role="alert">{erro}</div>}
+          <CabecalhoPagina titulo="Assinatura" subtitulo={`Entregue o celular para ${primeiroNome}.`} onVoltar={() => irPara("epi")} />
+          <p className="declaracao">
+            Eu, <strong>{pessoa.nome}</strong>, recebi <strong>1 {epi.nome}</strong> (CA {epi.ca}) e fui orientado sobre o uso correto.
+          </p>
           <Assinatura onMudar={setAssinatura} />
-          <button className="botao" style={{ marginTop: 16 }} disabled={!assinatura || salvando} onClick={concluir}>
-            {salvando ? "Salvando…" : "Confirmar entrega"}
+          <button className="botao" disabled={!assinatura || salvando} onClick={concluir}>
+            {salvando ? "Salvando…" : <><Icone nome="ok" /> Confirmar entrega</>}
           </button>
         </section>
       )}
 
       {passo === "pronto" && recibo && pessoa && (
         <section className="sucesso" aria-live="polite">
-          <div className="grande" aria-hidden="true">✓</div>
+          <div className="sucesso-icone" aria-hidden="true"><Icone nome="ok" tamanho={52} /></div>
           <h1>Entrega registrada</h1>
-          <p>{recibo.epiNome} entregue para {pessoa.nome}.</p>
-          <p className="suave">{new Date(recibo.criadoEm).toLocaleString("pt-BR")}</p>
-          <button className="botao" onClick={recomecar}>Nova entrega</button>
+          <p className="suave" style={{ marginTop: 6 }}>O registro está salvo e não pode ser alterado.</p>
+          <dl className="recibo">
+            <div><dt>Funcionário</dt><dd>{pessoa.nome}</dd></div>
+            <div><dt>EPI</dt><dd>{recibo.epiNome}</dd></div>
+            <div><dt>CA</dt><dd>{recibo.ca}</dd></div>
+            <div><dt>Data e hora</dt><dd>{new Date(recibo.criadoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</dd></div>
+          </dl>
+          <button className="botao" onClick={recomecar}>
+            <Icone nome="mais" /> Nova entrega
+          </button>
+          <Link className="botao secundario" href={`/ficha?f=${pessoa.id}`} style={{ textDecoration: "none", marginTop: 10 }}>
+            <Icone nome="ficha" /> Ver ficha de {primeiroNome}
+          </Link>
         </section>
       )}
     </main>

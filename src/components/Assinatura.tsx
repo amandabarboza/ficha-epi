@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Icone } from "./ui";
 
 type Props = { onMudar: (png: string | null) => void };
 
@@ -63,18 +64,25 @@ export function Assinatura({ onMudar }: Props) {
 
   return (
     <div>
-      <canvas
-        ref={tela}
-        className="assinatura"
-        aria-label="Área para assinar com o dedo"
-        onPointerDown={comecar}
-        onPointerMove={mover}
-        onPointerUp={terminar}
-        onPointerCancel={terminar}
-      />
-      <button type="button" className="botao secundario" style={{ marginTop: 12 }} onClick={limpar} disabled={vazia}>
-        Apagar e assinar de novo
-      </button>
+      <div className="assinatura-area">
+        <canvas
+          ref={tela}
+          className="assinatura"
+          aria-label="Área para assinar com o dedo"
+          onPointerDown={comecar}
+          onPointerMove={mover}
+          onPointerUp={terminar}
+          onPointerCancel={terminar}
+        />
+        <div className="assinatura-linha" aria-hidden="true" />
+        {vazia && <div className="assinatura-dica" aria-hidden="true">Assine com o dedo</div>}
+      </div>
+      <div className="assinatura-acoes">
+        <button type="button" onClick={limpar} disabled={vazia}>
+          <Icone nome="refazer" tamanho={18} />
+          Limpar assinatura
+        </button>
+      </div>
     </div>
   );
 }
