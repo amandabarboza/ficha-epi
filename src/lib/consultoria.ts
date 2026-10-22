@@ -6,7 +6,7 @@ export const CONSULTORIA = {
   cnpj: "",
   endereco: "",
   telefone: "(16) 99353-4846",
-  email: "",
+  email: "sol.frc@gmail.com",
   site: "solengenhariadeseguranca.com.br",
   instagram: "@solengenhariadeseguranca",
 };
