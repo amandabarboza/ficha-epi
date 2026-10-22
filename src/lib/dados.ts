@@ -154,7 +154,8 @@ function cadastrarEpiLocal(e: Omit<Epi, "id">): Epi {
 // Camada única usada pelas telas: Supabase quando configurado, senão demonstração
 // ---------------------------------------------------------------------------
 
-export type Dados = { funcionarios: Funcionario[]; epis: Epi[]; entregas: Entrega[] };
+export type Empresa = { nome: string; cnpj: string };
+export type Dados = { empresa: Empresa; funcionarios: Funcionario[]; epis: Epi[]; entregas: Entrega[] };
 
 type LinhaFuncionario = { id: string; nome: string; matricula: string; funcao: string | null };
 type LinhaEpi = { id: string; nome: string; ca: string; validade_ca: string; lote: string | null; estoque: number; estoque_minimo: number };
@@ -179,14 +180,15 @@ function mensagem(e: { message: string }): string {
 
 async function listarServidor(): Promise<Dados> {
   const sb = supabase();
-  const [f, e, d] = await Promise.all([
+  const [t, f, e, d] = await Promise.all([
+    sb.from("tenants").select("nome,cnpj").maybeSingle(),
     sb.from("funcionarios").select("id,nome,matricula,funcao").eq("ativo", true).order("nome"),
     sb.from("epis").select("id,nome,ca,validade_ca,lote,estoque,estoque_minimo").eq("ativo", true).order("nome"),
     sb.from("entregas")
       .select("id,funcionario_id,epi_id,tipo,quantidade,epi_nome,ca,lote,assinatura,criado_em,hash_anterior,hash,usuarios(nome)")
       .order("seq", { ascending: true }),
   ]);
-  const erro = f.error ?? e.error ?? d.error;
+  const erro = t.error ?? f.error ?? e.error ?? d.error;
   if (erro) throw new Error(mensagem(erro));
 
   const linhas = (d.data ?? []) as unknown as LinhaEntrega[];
@@ -197,6 +199,7 @@ async function listarServidor(): Promise<Dados> {
   }
 
   return {
+    empresa: { nome: t.data?.nome ?? "", cnpj: t.data?.cnpj ?? "" },
     funcionarios: ((f.data ?? []) as LinhaFuncionario[]).map((x) => ({ id: x.id, nome: x.nome, matricula: x.matricula, funcao: x.funcao ?? "" })),
     epis: ((e.data ?? []) as LinhaEpi[]).map((x) => ({
       id: x.id, nome: x.nome, ca: x.ca, validadeCa: x.validade_ca, lote: x.lote ?? "", estoque: x.estoque, estoqueMinimo: x.estoque_minimo,
@@ -249,7 +252,7 @@ export const repo = {
   comServidor,
 
   async listar(): Promise<Dados> {
-    return comServidor ? listarServidor() : carregar();
+    return comServidor ? listarServidor() : { ...carregar(), empresa: { nome: "Empresa de demonstração", cnpj: "" } };
   },
 
   registrarEntrega(p: PedidoEntrega): Promise<Entrega> {

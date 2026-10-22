@@ -1,36 +1,42 @@
 :root {
-  --cor-marca: #ea580c;
-  --cor-marca-escura: #c2410c;
-  --cor-fundo: #f6f5f3;
+  /* Identidade SOL: verde-petróleo das letras e amarelo do sol */
+  --sol-petroleo: #1a3a3a;
+  --sol-amarelo: #f8a80c;
+
+  --cor-marca: var(--sol-amarelo);          /* destaques: progresso, PIN, foco */
+  --cor-marca-escura: var(--sol-petroleo);  /* botões principais, aba ativa */
+  --cor-texto-botao: #ffffff;
+  --cor-fundo: #f4f6f5;
   --cor-superficie: #ffffff;
-  --cor-texto: #1c1917;
-  --cor-texto-suave: #57534e;
-  --cor-borda: #d6d3d1;
+  --cor-texto: #142424;
+  --cor-texto-suave: #4d5f5f;
+  --cor-borda: #d3dcdb;
   --cor-ok: #15803d;
   --cor-ok-fundo: #dcfce7;
   --cor-erro: #b91c1c;
   --cor-erro-fundo: #fee2e2;
-  --cor-aviso: #a16207;
-  --cor-aviso-fundo: #fef3c7;
+  --cor-aviso: #8a5a00;
+  --cor-aviso-fundo: #fff1d1;
   --raio: 16px;
   --altura-nav: 72px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --cor-marca: #fb923c;
-    --cor-marca-escura: #f97316;
-    --cor-fundo: #151311;
-    --cor-superficie: #211e1b;
-    --cor-texto: #f5f5f4;
-    --cor-texto-suave: #b8b2ac;
-    --cor-borda: #3f3a35;
+    --cor-marca: var(--sol-amarelo);
+    --cor-marca-escura: var(--sol-amarelo);
+    --cor-texto-botao: #142424;
+    --cor-fundo: #0e1b1b;
+    --cor-superficie: #162a2a;
+    --cor-texto: #eef3f2;
+    --cor-texto-suave: #a9bbba;
+    --cor-borda: #2c4646;
     --cor-ok: #4ade80;
     --cor-ok-fundo: #14351f;
     --cor-erro: #f87171;
     --cor-erro-fundo: #3f1717;
-    --cor-aviso: #facc15;
-    --cor-aviso-fundo: #3a2f0b;
+    --cor-aviso: #fbbf24;
+    --cor-aviso-fundo: #3a2c0b;
   }
 }
 
@@ -63,7 +69,7 @@ p { margin: 0 0 12px; }
   display: flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; min-height: 56px; padding: 12px 20px;
   border: 0; border-radius: var(--raio);
-  background: var(--cor-marca-escura); color: #fff;
+  background: var(--cor-marca-escura); color: var(--cor-texto-botao);
   font: inherit; font-weight: 700; cursor: pointer;
 }
 .botao:disabled { opacity: .45; cursor: not-allowed; }
@@ -100,7 +106,7 @@ p { margin: 0 0 12px; }
 
 .avatar {
   flex: none; width: 48px; height: 48px; border-radius: 50%;
-  background: var(--cor-marca-escura); color: #fff;
+  background: var(--cor-marca-escura); color: var(--cor-texto-botao);
   display: grid; place-items: center; font-weight: 800;
 }
 
@@ -168,4 +174,44 @@ p { margin: 0 0 12px; }
   .nav, .nao-imprimir { display: none !important; }
   body { background: #fff; color: #000; font-size: 12px; }
   .pagina { max-width: none; padding: 0; }
+}
+
+/* Cabeçalho com a marca: sempre branco, para o logo ficar legível também no modo escuro */
+.cabecalho {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 16px; padding-top: calc(8px + env(safe-area-inset-top));
+  background: #fff; border-bottom: 3px solid var(--sol-amarelo);
+}
+.cabecalho img { height: 40px; width: auto; display: block; }
+.cabecalho button {
+  min-height: 44px; padding: 0 12px; border: 0; background: none;
+  color: var(--sol-petroleo); font: inherit; font-weight: 600; cursor: pointer;
+}
+
+.logo-caixa {
+  background: #fff; border-radius: 24px; padding: 20px 24px;
+  display: inline-block; margin-bottom: 8px;
+}
+.logo-caixa img { width: 220px; max-width: 100%; height: auto; display: block; }
+
+/* Cabeçalho da ficha impressa */
+.ficha-topo {
+  display: flex; align-items: center; gap: 16px;
+  border-bottom: 3px solid var(--sol-amarelo); padding-bottom: 10px; margin-bottom: 12px;
+}
+.ficha-topo img { height: 64px; width: auto; }
+.ficha-topo .dados { font-size: 12px; line-height: 1.35; color: var(--cor-texto-suave); }
+.ficha-topo .dados strong { display: block; font-size: 14px; color: var(--cor-texto); }
+.ficha-titulo {
+  background: var(--sol-petroleo); color: #fff; text-align: center;
+  font-size: 16px; font-weight: 700; padding: 6px; margin: 0 0 10px; border-radius: 4px;
+}
+.ficha-identificacao { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; font-size: 13px; margin-bottom: 10px; }
+.ficha-assinaturas { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; font-size: 12px; text-align: center; }
+.ficha-assinaturas div { border-top: 1px solid #444; padding-top: 4px; }
+.ficha th { background: #eef2f1; }
+@media print {
+  .ficha-titulo, .ficha th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .ficha-topo .dados, .ficha-topo .dados strong { color: #000; }
 }

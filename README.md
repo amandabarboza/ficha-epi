@@ -42,13 +42,19 @@ PWA para controle de entrega de EPIs, pensado para uso no celular por quem não 
 4. Copie `.env.example` para `.env.local` e preencha URL e chave `anon` (Project Settings > API).
    Na Vercel, cadastre as mesmas duas variáveis.
 
+## Identidade visual
+
+- Cores, logo e cabeçalho seguem a marca SOL (verde-petróleo `#1a3a3a` e amarelo `#f8a80c`).
+- Dados da consultoria impressos no cabeçalho da ficha ficam em `src/lib/consultoria.ts`. Campos vazios não aparecem.
+- Ícones: `npm run icons` regera favicon e ícones a partir de `public/marca/sol-simbolo.png`.
+
 ## Desenvolvimento
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
 npm run build
-npm run icons      # regera favicon e ícones a partir de public/icons/icon.svg
+npm run icons      # regera favicon e ícones a partir de public/marca/sol-simbolo.png
 ```
 
 Dados de teste: funcionários com PIN `1234`. O EPI "Óculos de proteção" tem CA vencido de propósito.

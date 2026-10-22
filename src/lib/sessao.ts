@@ -30,6 +30,12 @@ export function sair() {
 // Com Supabase: e-mail e senha do almoxarife. Sem Supabase: só o nome (demonstração).
 // ---------------------------------------------------------------------------
 
+export async function encerrarSessao(): Promise<void> {
+  const { comServidor, supabase } = await import("./supabase");
+  sair();
+  if (comServidor) await supabase().auth.signOut();
+}
+
 export async function temSessao(): Promise<boolean> {
   const { comServidor, supabase } = await import("./supabase");
   if (!comServidor) return lerSessao() !== null;

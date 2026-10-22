@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { entrar, entrarComSenha } from "@/lib/sessao";
+import { CONSULTORIA } from "@/lib/consultoria";
 import { comServidor } from "@/lib/supabase";
 
 export default function Entrar() {
@@ -36,8 +37,10 @@ export default function Entrar() {
   return (
     <main className="pagina">
       <div style={{ textAlign: "center", padding: "32px 0 24px" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/icons/icon-192.png" width={96} height={96} alt="" style={{ borderRadius: 24 }} />
+        <div className="logo-caixa">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={CONSULTORIA.logo} alt={CONSULTORIA.nome} width={220} height={127} />
+        </div>
         <h1 style={{ marginTop: 16 }}>Ficha de EPI</h1>
         <p className="suave">Quem está no almoxarifado agora?</p>
       </div>

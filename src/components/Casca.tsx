@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { temSessao } from "@/lib/sessao";
+import { CONSULTORIA } from "@/lib/consultoria";
+import { encerrarSessao, temSessao } from "@/lib/sessao";
 
 const ABAS = [
   { href: "/retirada", rotulo: "Entregar", icone: "M12 3v12m0 0-4-4m4 4 4-4M5 19h14" },
@@ -38,11 +39,26 @@ export function Casca({ children }: { children: React.ReactNode }) {
 
   if (!publica && !pronto) return null;
 
+  async function sairDoApp() {
+    await encerrarSessao();
+    roteador.replace("/entrar");
+  }
+
+  // A ficha tem cabeçalho próprio para impressão
+  const comCabecalho = !publica && caminho !== "/ficha";
+
   return (
     <>
+      {comCabecalho && (
+        <header className="cabecalho nao-imprimir">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={CONSULTORIA.logo} alt={CONSULTORIA.nome} />
+          <button type="button" onClick={sairDoApp}>Sair</button>
+        </header>
+      )}
       {children}
       {!publica && (
-        <nav className="nav" aria-label="Principal">
+        <nav className="nav nao-imprimir" aria-label="Principal">
           {ABAS.map((aba) => (
             <Link key={aba.href} href={aba.href} aria-current={caminho.startsWith(aba.href) ? "page" : undefined}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
