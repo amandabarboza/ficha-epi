@@ -184,7 +184,7 @@ async function listarServidor(): Promise<Dados> {
     sb.from("epis").select("id,nome,ca,validade_ca,lote,estoque,estoque_minimo").eq("ativo", true).order("nome"),
     sb.from("entregas")
       .select("id,funcionario_id,epi_id,tipo,quantidade,epi_nome,ca,lote,assinatura,criado_em,hash_anterior,hash,usuarios(nome)")
-      .order("criado_em", { ascending: true }),
+      .order("seq", { ascending: true }),
   ]);
   const erro = f.error ?? e.error ?? d.error;
   if (erro) throw new Error(mensagem(erro));

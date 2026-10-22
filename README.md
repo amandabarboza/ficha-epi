@@ -18,7 +18,8 @@ PWA para controle de entrega de EPIs, pensado para uso no celular por quem não 
 | PWA (manifest, ícones, service worker) | Feito |
 | Dados | Supabase quando configurado; sem configuração, modo demonstração no navegador (`src/lib/dados.ts`) |
 | Banco no Supabase (`supabase/migrations/0001_init.sql`) | Escrito e testado em Postgres local: registro imutável, hash encadeado, PIN com bloqueio, isolamento por empresa |
-| Ligar o app ao Supabase: login por e-mail e senha, dados, assinatura no Storage | Código pronto, falta testar num projeto real |
+| Supabase (projeto `ficha-epi`, São Paulo) | Criado, migrações 0001 a 0004 aplicadas e regras testadas no banco |
+| App falando com o Supabase (login, dados, assinatura) | Código pronto, falta testar pelo navegador com um usuário real |
 | Fila offline com sincronização | Próximo passo |
 | Face ID / digital (WebAuthn) para o almoxarife | Próximo passo |
 | Foto de evidência (com consentimento LGPD) | Próximo passo |
@@ -36,7 +37,7 @@ PWA para controle de entrega de EPIs, pensado para uso no celular por quem não 
 ## Ligar ao Supabase
 
 1. Crie um projeto em supabase.com (região São Paulo).
-2. No SQL Editor, rode em ordem `supabase/migrations/0001_init.sql` e `0002_assinaturas.sql`.
+2. No SQL Editor, rode em ordem os arquivos de `supabase/migrations/` (0001 a 0004).
 3. Crie o primeiro usuário e empresa com `supabase/primeiro-acesso.sql`.
 4. Copie `.env.example` para `.env.local` e preencha URL e chave `anon` (Project Settings > API).
    Na Vercel, cadastre as mesmas duas variáveis.
