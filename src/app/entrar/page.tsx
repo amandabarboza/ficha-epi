@@ -21,13 +21,13 @@ export default function Entrar() {
     if (!comServidor) {
       if (!nome.trim()) return;
       entrar(nome.trim());
-      roteador.replace("/retirada");
+      roteador.replace("/inicio");
       return;
     }
     setEnviando(true);
     try {
       await entrarComSenha(email.trim(), senha);
-      roteador.replace("/retirada");
+      roteador.replace("/inicio");
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Não foi possível entrar.");
     } finally {
@@ -37,41 +37,38 @@ export default function Entrar() {
 
   return (
     <main className="entrar">
-      <div className="entrar-topo">
+      <header className="heroi">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={CONSULTORIA.logoNegativo} alt={CONSULTORIA.nome} width={240} height={139} />
-      </div>
-      <div className="entrar-faixa" aria-hidden="true" />
+        <img src={CONSULTORIA.logoNegativo} alt={CONSULTORIA.nome} width={220} height={127} />
+      </header>
       <div className="entrar-corpo">
-      <span className="rotulo">Almoxarifado</span>
-      <h1>Ficha de EPI</h1>
-      <p className="suave">Entre para registrar as entregas.</p>
-
-      <form onSubmit={acessar}>
-        {erro && <div className="aviso-caixa erro" role="alert"><Icone nome="alerta" tamanho={20} />{erro}</div>}
-        {comServidor ? (
-          <>
-            <label className="campo">
-              <span>E-mail</span>
-              <input type="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />
-            </label>
-            <label className="campo">
-              <span>Senha</span>
-              <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} autoComplete="current-password" required />
-            </label>
-            <button className="botao" type="submit" disabled={enviando}>{enviando ? "Entrando…" : "Entrar"}</button>
-          </>
-        ) : (
-          <>
-            <label className="campo">
-              <span>Seu nome</span>
-              <input value={nome} onChange={(e) => setNome(e.target.value)} autoComplete="name" placeholder="Ex.: Ana Lima" required />
-            </label>
-            <button className="botao" type="submit" disabled={!nome.trim()}>Entrar</button>
-          </>
-        )}
-      </form>
-      {!comServidor && <p className="entrar-rodape">Versão de demonstração: os dados ficam só neste aparelho.</p>}
+        <form onSubmit={acessar} className="entrar-cartao">
+          <h1>Ficha de EPI</h1>
+          <p className="suave">Entre para registrar as entregas.</p>
+          {erro && <div className="aviso-caixa erro" role="alert"><Icone nome="alerta" tamanho={20} />{erro}</div>}
+          {comServidor ? (
+            <>
+              <label className="campo">
+                <span>E-mail</span>
+                <input type="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />
+              </label>
+              <label className="campo">
+                <span>Senha</span>
+                <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} autoComplete="current-password" required />
+              </label>
+              <button className="botao" type="submit" disabled={enviando}>{enviando ? "Entrando…" : "Entrar"}</button>
+            </>
+          ) : (
+            <>
+              <label className="campo">
+                <span>Seu nome</span>
+                <input value={nome} onChange={(e) => setNome(e.target.value)} autoComplete="name" placeholder="Ex.: Ana Lima" required />
+              </label>
+              <button className="botao" type="submit" disabled={!nome.trim()}>Entrar</button>
+            </>
+          )}
+        </form>
+        {!comServidor && <p className="entrar-rodape">Versão de demonstração: os dados ficam só neste aparelho.</p>}
       </div>
     </main>
   );

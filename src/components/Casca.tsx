@@ -7,9 +7,12 @@ import { CONSULTORIA } from "@/lib/consultoria";
 import { encerrarSessao, temSessao } from "@/lib/sessao";
 import { Icone, type NomeIcone } from "./ui";
 
-const ABAS: { href: string; rotulo: string; icone: NomeIcone }[] = [
-  { href: "/retirada", rotulo: "Entregar", icone: "entrega" },
+type Aba = { href: string; rotulo: string; icone: NomeIcone };
+const ESQUERDA: Aba[] = [
+  { href: "/inicio", rotulo: "Início", icone: "inicio" },
   { href: "/funcionarios", rotulo: "Pessoas", icone: "pessoas" },
+];
+const DIREITA: Aba[] = [
   { href: "/epis", rotulo: "EPIs", icone: "escudo" },
   { href: "/historico", rotulo: "Fichas", icone: "ficha" },
 ];
@@ -19,6 +22,8 @@ export function Casca({ children }: { children: React.ReactNode }) {
   const roteador = useRouter();
   const [pronto, setPronto] = useState(false);
   const publica = caminho === "/entrar";
+  // O Início tem topo próprio (com saudação); as demais telas usam a barra com o logo
+  const comBarra = !publica && caminho !== "/inicio";
 
   useEffect(() => {
     if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
@@ -40,39 +45,55 @@ export function Casca({ children }: { children: React.ReactNode }) {
 
   if (!publica && !pronto) return null;
 
-  async function sairDoApp() {
-    await encerrarSessao();
-    roteador.replace("/entrar");
-  }
+  const aba = (a: Aba) => {
+    const atual = caminho.startsWith(a.href) || (a.href === "/historico" && caminho === "/ficha");
+    return (
+      <Link key={a.href} href={a.href} aria-current={atual ? "page" : undefined}>
+        <Icone nome={a.icone} tamanho={24} />
+        {a.rotulo}
+      </Link>
+    );
+  };
 
   return (
     <>
-      {!publica && (
-        <header className="cabecalho nao-imprimir">
-          <div className="cabecalho-linha">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={CONSULTORIA.logoNegativo} alt={CONSULTORIA.nome} />
-            <button type="button" className="sair" onClick={sairDoApp}>
-              <Icone nome="sair" tamanho={18} />
-              Sair
-            </button>
-          </div>
+      {comBarra && (
+        <header className="barra nao-imprimir">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="logo-claro" src={CONSULTORIA.logo} alt={CONSULTORIA.nome} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="logo-escuro" src={CONSULTORIA.logoNegativo} alt="" />
+          <BotaoSair />
         </header>
       )}
       {children}
       {!publica && (
-        <nav className="nav nao-imprimir" aria-label="Principal">
-          {ABAS.map((aba) => {
-            const atual = caminho.startsWith(aba.href) || (aba.href === "/historico" && caminho === "/ficha");
-            return (
-              <Link key={aba.href} href={aba.href} aria-current={atual ? "page" : undefined}>
-                <Icone nome={aba.icone} tamanho={26} />
-                {aba.rotulo}
-              </Link>
-            );
-          })}
-        </nav>
+        <>
+          <nav className="nav nao-imprimir" aria-label="Principal">
+            <div className="nav-itens">
+              {ESQUERDA.map(aba)}
+              <span aria-hidden="true" />
+              {DIREITA.map(aba)}
+            </div>
+          </nav>
+          <Link className="fab nao-imprimir" href="/retirada" aria-label="Nova entrega de EPI" aria-current={caminho === "/retirada" ? "page" : undefined}>
+            <Icone nome="mais" tamanho={30} />
+          </Link>
+        </>
       )}
     </>
+  );
+}
+
+export function BotaoSair() {
+  const roteador = useRouter();
+  async function sair() {
+    await encerrarSessao();
+    roteador.replace("/entrar");
+  }
+  return (
+    <button type="button" className="sair" onClick={sair} aria-label="Sair">
+      <Icone nome="sair" tamanho={20} />
+    </button>
   );
 }

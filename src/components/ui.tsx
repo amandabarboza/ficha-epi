@@ -19,6 +19,7 @@ const ICONES = {
   imprimir: ["M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2", "M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6", "M7 14h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z"],
   caixa: ["M11 21.7a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7z", "M12 22V12", "m3.3 7 8.7 5 8.7-5"],
   refazer: ["M3 12a9 9 0 1 0 9-9 9.8 9.8 0 0 0-6.7 2.7L3 8", "M3 3v5h5"],
+  inicio: ["M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"],
   apagar: ["M10 5a2 2 0 0 0-1.3.5l-6.4 5.8a1 1 0 0 0 0 1.4l6.4 5.8A2 2 0 0 0 10 19h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z", "m12 9 6 6", "m18 9-6 6"],
   relogio: ["M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z", "M12 6v6l4 2"],
 } as const;
@@ -50,10 +51,21 @@ export function iniciais(nome: string) {
   return nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
 }
 
-// Iniciais em formato de crachá
+// Tons suaves; cada pessoa recebe sempre o mesmo, calculado pelo nome
+const CORES_AVATAR = ["#cfe6e3", "#ffe3a3", "#f9d3cc", "#d9e4fb", "#e2f0c9", "#ead9f5"];
+function corDoNome(nome: string) {
+  let h = 0;
+  for (const c of nome) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return CORES_AVATAR[h % CORES_AVATAR.length];
+}
+
 export function Avatar({ nome, grande = false }: { nome: string; grande?: boolean }) {
   return (
-    <span className={grande ? "cracha cracha-grande" : "cracha"} aria-hidden="true">
+    <span
+      className={grande ? "cracha cracha-grande" : "cracha"}
+      style={{ "--cor-avatar": corDoNome(nome) } as React.CSSProperties}
+      aria-hidden="true"
+    >
       {iniciais(nome)}
     </span>
   );
@@ -70,7 +82,7 @@ export function EtiquetaCA({ ca, vencido = false }: { ca: string; vencido?: bool
 }
 
 export function Matricula({ valor }: { valor: string }) {
-  return <span className="matricula">MAT {valor}</span>;
+  return <span className="matricula">Mat. {valor}</span>;
 }
 
 type CabecalhoProps = {

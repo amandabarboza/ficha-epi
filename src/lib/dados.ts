@@ -155,7 +155,7 @@ function cadastrarEpiLocal(e: Omit<Epi, "id">): Epi {
 // ---------------------------------------------------------------------------
 
 export type Empresa = { nome: string; cnpj: string };
-export type Dados = { empresa: Empresa; funcionarios: Funcionario[]; epis: Epi[]; entregas: Entrega[] };
+export type Dados = { usuario: string; empresa: Empresa; funcionarios: Funcionario[]; epis: Epi[]; entregas: Entrega[] };
 
 type LinhaFuncionario = { id: string; nome: string; matricula: string; funcao: string | null };
 type LinhaEpi = { id: string; nome: string; ca: string; validade_ca: string; lote: string | null; estoque: number; estoque_minimo: number };
@@ -180,7 +180,9 @@ function mensagem(e: { message: string }): string {
 
 async function listarServidor(): Promise<Dados> {
   const sb = supabase();
-  const [t, f, e, d] = await Promise.all([
+  const { data: auth } = await sb.auth.getUser();
+  const [u, t, f, e, d] = await Promise.all([
+    sb.from("usuarios").select("nome").eq("id", auth.user?.id ?? "").maybeSingle(),
     sb.from("tenants").select("nome,cnpj").maybeSingle(),
     sb.from("funcionarios").select("id,nome,matricula,funcao").eq("ativo", true).order("nome"),
     sb.from("epis").select("id,nome,ca,validade_ca,lote,estoque,estoque_minimo").eq("ativo", true).order("nome"),
@@ -199,6 +201,7 @@ async function listarServidor(): Promise<Dados> {
   }
 
   return {
+    usuario: u.data?.nome ?? "",
     empresa: { nome: t.data?.nome ?? "", cnpj: t.data?.cnpj ?? "" },
     funcionarios: ((f.data ?? []) as LinhaFuncionario[]).map((x) => ({ id: x.id, nome: x.nome, matricula: x.matricula, funcao: x.funcao ?? "" })),
     epis: ((e.data ?? []) as LinhaEpi[]).map((x) => ({
@@ -252,7 +255,9 @@ export const repo = {
   comServidor,
 
   async listar(): Promise<Dados> {
-    return comServidor ? listarServidor() : { ...carregar(), empresa: { nome: "Empresa de demonstração", cnpj: "" } };
+    if (comServidor) return listarServidor();
+    const usuario = localStorage.getItem("ficha-epi:sessao") ?? "";
+    return { ...carregar(), usuario, empresa: { nome: "Empresa de demonstração", cnpj: "" } };
   },
 
   registrarEntrega(p: PedidoEntrega): Promise<Entrega> {

@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Ficha EPI",
     description: "Controle de entrega de EPIs",
     lang: "pt-BR",
-    start_url: "/retirada",
+    start_url: "/inicio",
     display: "standalone",
     orientation: "portrait",
     background_color: "#1a3a3a",

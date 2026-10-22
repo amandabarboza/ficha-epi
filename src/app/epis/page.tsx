@@ -6,7 +6,7 @@ import { caVencido, diasParaVencer, repo } from "@/lib/dados";
 import type { Epi } from "@/lib/tipos";
 
 const VAZIO = { nome: "", ca: "", validadeCa: "", lote: "", estoque: "", estoqueMinimo: "" };
-type Filtro = "todos" | "atencao" | "bloqueados";
+type Filtro = "todos" | "atencao" | "bloqueados" | "alertas"; // "alertas" = atenção + bloqueados (atalho do Início)
 
 const estoqueBaixo = (e: Epi) => e.estoque <= e.estoqueMinimo;
 const bloqueado = (e: Epi) => caVencido(e) || e.estoque <= 0;
@@ -28,6 +28,11 @@ export default function Epis() {
       .finally(() => setCarregando(false));
   }
   useEffect(recarregar, []);
+  // Atalho "Alertas" do Início abre já filtrado
+  useEffect(() => {
+    const f = new URLSearchParams(window.location.search).get("filtro");
+    if (f === "atencao" || f === "bloqueados" || f === "alertas") setFiltro(f);
+  }, []);
 
   const fechar = useCallback(() => {
     setNovo(false);
@@ -63,7 +68,11 @@ export default function Epis() {
     bloqueados: lista.filter(bloqueado).length,
   };
   const visiveis = useMemo(() => {
-    const base = filtro === "atencao" ? lista.filter(precisaAtencao) : filtro === "bloqueados" ? lista.filter(bloqueado) : lista;
+    const base =
+      filtro === "atencao" ? lista.filter(precisaAtencao)
+      : filtro === "bloqueados" ? lista.filter(bloqueado)
+      : filtro === "alertas" ? lista.filter((e) => precisaAtencao(e) || bloqueado(e))
+      : lista;
     return [...base].sort((a, b) => a.nome.localeCompare(b.nome));
   }, [filtro, lista]);
 
