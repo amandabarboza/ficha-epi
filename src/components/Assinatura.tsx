@@ -74,6 +74,7 @@ export function Assinatura({ onMudar }: Props) {
           onPointerUp={terminar}
           onPointerCancel={terminar}
         />
+        <div className="assinatura-x" aria-hidden="true">✕</div>
         <div className="assinatura-linha" aria-hidden="true" />
         {vazia && <div className="assinatura-dica" aria-hidden="true">Assine com o dedo</div>}
       </div>

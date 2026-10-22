@@ -1,30 +1,34 @@
-// Gera favicon e ícones do app a partir do símbolo do sol (public/marca/sol-simbolo.png).
+// Gera favicon e ícones do app a partir dos desenhos vetoriais em public/icons.
+//   icone.svg          → ícone completo (app, tela inicial)
+//   icone-pequeno.svg  → versão simplificada para 16 e 32 px
 import sharp from "sharp";
-import { writeFileSync } from "node:fs";
+import { copyFileSync, readFileSync, writeFileSync } from "node:fs";
 
-const simbolo = "public/marca/sol-simbolo.png";
+const completo = readFileSync("public/icons/icone.svg", "utf8");
+const pequeno = readFileSync("public/icons/icone-pequeno.svg", "utf8");
+// Sem cantos arredondados: iOS e Android aplicam a máscara deles
+const quadrado = completo.replace(/rx="\d+"/, 'rx="0"');
 
-// Fundo branco com cantos arredondados e o sol ocupando `escala` do lado.
-async function icone(lado, { escala = 0.8, cantos = true } = {}) {
-  const miolo = Math.round(lado * escala);
-  const sol = await sharp(simbolo).resize(miolo, miolo, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
-  const raio = cantos ? Math.round(lado * 0.22) : 0;
-  const fundo = Buffer.from(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${lado}" height="${lado}"><rect width="${lado}" height="${lado}" rx="${raio}" fill="#ffffff"/></svg>`,
-  );
-  return sharp(fundo).composite([{ input: sol, gravity: "center" }]).png().toBuffer();
-}
+const png = (svg, lado) => sharp(Buffer.from(svg), { density: 400 }).resize(lado, lado).png().toBuffer();
 
-writeFileSync("public/icons/icon-192.png", await icone(192));
-writeFileSync("public/icons/icon-512.png", await icone(512));
-writeFileSync("src/app/icon.png", await icone(512));
-writeFileSync("src/app/apple-icon.png", await icone(180, { escala: 0.78, cantos: false }));
-// "maskable": fundo cheio e sol menor, para caber na área segura do Android
-writeFileSync("public/icons/icon-maskable-512.png", await icone(512, { escala: 0.6, cantos: false }));
+writeFileSync("public/icons/icon-192.png", await png(completo, 192));
+writeFileSync("public/icons/icon-512.png", await png(completo, 512));
+writeFileSync("src/app/apple-icon.png", await png(quadrado, 180));
+copyFileSync("public/icons/icone.svg", "src/app/icon.svg");
 
-// favicon.ico com PNGs embutidos (16, 32, 48); nos tamanhos pequenos o sol ocupa quase tudo
+// "maskable": desenho reduzido dentro da área segura, fundo petróleo cheio
+const miolo = await png(quadrado, 400);
+writeFileSync(
+  "public/icons/icon-maskable-512.png",
+  await sharp({ create: { width: 512, height: 512, channels: 4, background: "#1a3a3a" } })
+    .composite([{ input: miolo, gravity: "center" }])
+    .png()
+    .toBuffer(),
+);
+
+// favicon.ico com PNGs embutidos (16, 32, 48)
 const tamanhos = [16, 32, 48];
-const imagens = await Promise.all(tamanhos.map((t) => icone(t, { escala: 0.96, cantos: false })));
+const imagens = await Promise.all(tamanhos.map((t) => png(t <= 32 ? pequeno : completo, t)));
 const cabecalho = Buffer.alloc(6);
 cabecalho.writeUInt16LE(1, 2);
 cabecalho.writeUInt16LE(tamanhos.length, 4);

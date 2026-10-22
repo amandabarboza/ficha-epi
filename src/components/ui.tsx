@@ -50,22 +50,38 @@ export function iniciais(nome: string) {
   return nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
 }
 
+// Iniciais em formato de crachá
 export function Avatar({ nome, grande = false }: { nome: string; grande?: boolean }) {
   return (
-    <span className={grande ? "avatar avatar-grande" : "avatar"} aria-hidden="true">
+    <span className={grande ? "cracha cracha-grande" : "cracha"} aria-hidden="true">
       {iniciais(nome)}
     </span>
   );
 }
 
+// Número do CA em etiqueta, como selo carimbado no equipamento
+export function EtiquetaCA({ ca, vencido = false }: { ca: string; vencido?: boolean }) {
+  return (
+    <span className={vencido ? "ca vencido" : "ca"} aria-label={`CA ${ca}`}>
+      <small>CA</small>
+      <b>{ca}</b>
+    </span>
+  );
+}
+
+export function Matricula({ valor }: { valor: string }) {
+  return <span className="matricula">MAT {valor}</span>;
+}
+
 type CabecalhoProps = {
+  rotulo?: string;
   titulo: string;
   subtitulo?: string;
   onVoltar?: () => void;
   acao?: React.ReactNode;
 };
 
-export function CabecalhoPagina({ titulo, subtitulo, onVoltar, acao }: CabecalhoProps) {
+export function CabecalhoPagina({ rotulo, titulo, subtitulo, onVoltar, acao }: CabecalhoProps) {
   return (
     <div className="cab-pagina">
       {onVoltar && (
@@ -74,6 +90,7 @@ export function CabecalhoPagina({ titulo, subtitulo, onVoltar, acao }: Cabecalho
         </button>
       )}
       <div className="cab-pagina-textos">
+        {rotulo && <span className="rotulo">{rotulo}</span>}
         <h1>{titulo}</h1>
         {subtitulo && <p>{subtitulo}</p>}
       </div>
@@ -123,7 +140,6 @@ export function Folha({ aberta, titulo, onFechar, children }: { aberta: boolean;
   return (
     <div className="folha-fundo" onClick={onFechar}>
       <div ref={painel} className="folha" role="dialog" aria-modal="true" aria-label={titulo} onClick={(e) => e.stopPropagation()}>
-        <div className="folha-alca" aria-hidden="true" />
         <div className="folha-topo">
           <h2>{titulo}</h2>
           <button type="button" className="botao-icone" onClick={onFechar} aria-label="Fechar">

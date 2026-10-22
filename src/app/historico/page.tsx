@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Avatar, Busca, CabecalhoPagina, Icone, Vazio } from "@/components/ui";
+import { Avatar, Busca, CabecalhoPagina, EtiquetaCA, Icone, Vazio } from "@/components/ui";
 import { repo, verificarCadeia } from "@/lib/dados";
 import type { Entrega, Funcionario } from "@/lib/tipos";
 
@@ -44,7 +44,7 @@ export default function Historico() {
 
   return (
     <main className="pagina">
-      <CabecalhoPagina titulo="Fichas" subtitulo="Escolha o funcionário para ver e imprimir a ficha." />
+      <CabecalhoPagina rotulo="Ficha por funcionário" titulo="Fichas" subtitulo="Toque no nome para ver e imprimir." />
 
       {integra === false && (
         <div className="aviso-caixa erro" role="alert">
@@ -79,14 +79,14 @@ export default function Historico() {
         </ul>
       )}
 
-      <h2 className="secao-titulo">Últimas entregas</h2>
+      <h2 className="secao-titulo rotulo">Últimas entregas</h2>
       {!carregando && entregas.length === 0 ? (
         <Vazio icone="relogio" titulo="Nenhuma entrega ainda" texto="As entregas aparecem aqui assim que forem registradas." />
       ) : (
         <ul className="lista">
           {[...entregas].reverse().slice(0, 15).map((e) => (
             <li key={e.id} className="item">
-              <span className="item-icone"><Icone nome="escudo" /></span>
+              <EtiquetaCA ca={e.ca} />
               <span className="item-textos">
                 <span className="item-titulo">{e.epiNome}</span>
                 <span className="item-detalhe">{nome(e.funcionarioId)} · {dataCurta(e.criadoEm)}</span>

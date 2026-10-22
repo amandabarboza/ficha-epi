@@ -49,12 +49,14 @@ export function Casca({ children }: { children: React.ReactNode }) {
     <>
       {!publica && (
         <header className="cabecalho nao-imprimir">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={CONSULTORIA.logo} alt={CONSULTORIA.nome} />
-          <button type="button" className="sair" onClick={sairDoApp}>
-            <Icone nome="sair" tamanho={18} />
-            Sair
-          </button>
+          <div className="cabecalho-linha">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={CONSULTORIA.logoNegativo} alt={CONSULTORIA.nome} />
+            <button type="button" className="sair" onClick={sairDoApp}>
+              <Icone nome="sair" tamanho={18} />
+              Sair
+            </button>
+          </div>
         </header>
       )}
       {children}
@@ -64,7 +66,7 @@ export function Casca({ children }: { children: React.ReactNode }) {
             const atual = caminho.startsWith(aba.href) || (aba.href === "/historico" && caminho === "/ficha");
             return (
               <Link key={aba.href} href={aba.href} aria-current={atual ? "page" : undefined}>
-                <span className="nav-icone"><Icone nome={aba.icone} /></span>
+                <Icone nome={aba.icone} tamanho={26} />
                 {aba.rotulo}
               </Link>
             );

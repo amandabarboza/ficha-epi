@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Avatar, Busca, CabecalhoPagina, Folha, Icone, Vazio } from "@/components/ui";
+import { Avatar, Busca, CabecalhoPagina, Folha, Icone, Matricula, Vazio } from "@/components/ui";
 import { repo } from "@/lib/dados";
 import type { Funcionario } from "@/lib/tipos";
 
@@ -58,8 +58,8 @@ export default function Funcionarios() {
   return (
     <main className="pagina">
       <CabecalhoPagina
+        rotulo={carregando ? "Equipe" : `${lista.length} ${lista.length === 1 ? "funcionário" : "funcionários"}`}
         titulo="Pessoas"
-        subtitulo={carregando ? undefined : `${lista.length} ${lista.length === 1 ? "funcionário" : "funcionários"}`}
         acao={
           <button className="botao-pilula" onClick={() => setNovo(true)}>
             <Icone nome="mais" tamanho={20} /> Novo
@@ -79,7 +79,7 @@ export default function Funcionarios() {
                 <Avatar nome={f.nome} />
                 <span className="item-textos">
                   <span className="item-titulo">{f.nome}</span>
-                  <span className="item-detalhe">Matrícula {f.matricula}{f.funcao && ` · ${f.funcao}`}</span>
+                  <span className="item-detalhe"><Matricula valor={f.matricula} />{f.funcao}</span>
                 </span>
                 <Icone nome="seta" className="item-seta" />
               </Link>

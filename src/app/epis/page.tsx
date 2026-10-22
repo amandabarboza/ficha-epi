@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CabecalhoPagina, Folha, Icone, Vazio } from "@/components/ui";
+import { CabecalhoPagina, EtiquetaCA, Folha, Icone, Vazio } from "@/components/ui";
 import { caVencido, diasParaVencer, repo } from "@/lib/dados";
 import type { Epi } from "@/lib/tipos";
 
@@ -72,8 +72,8 @@ export default function Epis() {
   return (
     <main className="pagina">
       <CabecalhoPagina
+        rotulo="Catálogo"
         titulo="EPIs"
-        subtitulo="Catálogo com CA e estoque"
         acao={
           <button className="botao-pilula" onClick={() => setNovo(true)}>
             <Icone nome="mais" tamanho={20} /> Novo
@@ -82,14 +82,14 @@ export default function Epis() {
       />
 
       {!carregando && lista.length > 0 && (
-        <div className="resumo" role="group" aria-label="Filtrar EPIs">
-          <button className="bloco" aria-pressed={filtro === "todos"} onClick={() => setFiltro("todos")}>
+        <div className="painel" role="group" aria-label="Filtrar EPIs">
+          <button className="contador" aria-pressed={filtro === "todos"} onClick={() => setFiltro("todos")}>
             <strong>{contagem.todos}</strong><span>Itens</span>
           </button>
-          <button className="bloco aviso" aria-pressed={filtro === "atencao"} onClick={() => alternar("atencao")}>
+          <button className="contador aviso" aria-pressed={filtro === "atencao"} onClick={() => alternar("atencao")}>
             <strong>{contagem.atencao}</strong><span>Atenção</span>
           </button>
-          <button className="bloco erro" aria-pressed={filtro === "bloqueados"} onClick={() => alternar("bloqueados")}>
+          <button className="contador erro" aria-pressed={filtro === "bloqueados"} onClick={() => alternar("bloqueados")}>
             <strong>{contagem.bloqueados}</strong><span>Bloqueados</span>
           </button>
         </div>
@@ -104,11 +104,11 @@ export default function Epis() {
           {visiveis.map((e) => {
             const dias = diasParaVencer(e);
             return (
-              <li key={e.id} className="item">
-                <span className="item-icone"><Icone nome="escudo" /></span>
+              <li key={e.id} className={bloqueado(e) ? "item bloqueado" : "item"}>
+                <EtiquetaCA ca={e.ca} vencido={caVencido(e)} />
                 <span className="item-textos">
                   <span className="item-titulo">{e.nome}</span>
-                  <span className="item-detalhe">CA {e.ca}{e.lote && ` · lote ${e.lote}`}</span>
+                  {e.lote && <span className="item-detalhe">Lote {e.lote}</span>}
                   <span className="selos">
                     {caVencido(e) ? <span className="selo erro">CA vencido</span>
                       : dias <= 30 ? <span className="selo aviso">CA vence em {dias} {dias === 1 ? "dia" : "dias"}</span>

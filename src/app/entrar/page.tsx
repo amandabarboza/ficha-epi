@@ -37,14 +37,17 @@ export default function Entrar() {
 
   return (
     <main className="entrar">
-      <div className="entrar-logo">
+      <div className="entrar-topo">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={CONSULTORIA.logo} alt={CONSULTORIA.nome} width={230} height={133} />
+        <img src={CONSULTORIA.logoNegativo} alt={CONSULTORIA.nome} width={240} height={139} />
       </div>
+      <div className="entrar-faixa" aria-hidden="true" />
+      <div className="entrar-corpo">
+      <span className="rotulo">Almoxarifado</span>
       <h1>Ficha de EPI</h1>
-      <p className="suave">Entre para registrar as entregas do almoxarifado.</p>
+      <p className="suave">Entre para registrar as entregas.</p>
 
-      <form onSubmit={acessar} className="entrar-cartao">
+      <form onSubmit={acessar}>
         {erro && <div className="aviso-caixa erro" role="alert"><Icone nome="alerta" tamanho={20} />{erro}</div>}
         {comServidor ? (
           <>
@@ -69,6 +72,7 @@ export default function Entrar() {
         )}
       </form>
       {!comServidor && <p className="entrar-rodape">Versão de demonstração: os dados ficam só neste aparelho.</p>}
+      </div>
     </main>
   );
 }

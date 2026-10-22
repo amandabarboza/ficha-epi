@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Assinatura } from "@/components/Assinatura";
 import { TecladoPin } from "@/components/TecladoPin";
-import { Avatar, Busca, CabecalhoPagina, Icone, Vazio } from "@/components/ui";
+import { Avatar, Busca, CabecalhoPagina, EtiquetaCA, Icone, Matricula, Vazio } from "@/components/ui";
 import { caVencido, repo } from "@/lib/dados";
 import { lerSessao } from "@/lib/sessao";
 import type { Entrega, Epi, Funcionario } from "@/lib/tipos";
@@ -128,6 +128,7 @@ export default function Retirada() {
         <ol className="etapas" aria-label={`Passo ${indice + 1} de 4`}>
           {ETAPAS.map((e, i) => (
             <li key={e.passo} className={i < indice ? "feita" : i === indice ? "atual" : ""} aria-current={i === indice ? "step" : undefined}>
+              <b>{String(i + 1).padStart(2, "0")}</b>
               {e.rotulo}
             </li>
           ))}
@@ -143,7 +144,7 @@ export default function Retirada() {
 
       {passo === "pessoa" && (
         <section>
-          <CabecalhoPagina titulo="Quem vai receber?" subtitulo="Toque no nome do funcionário." />
+          <CabecalhoPagina rotulo="Entrega de EPI" titulo="Quem vai receber?" subtitulo="Toque no nome do funcionário." />
           <Busca valor={busca} onMudar={setBusca} rotulo="Buscar por nome ou matrícula" />
           {!carregando && filtrados.length === 0 ? (
             <Vazio
@@ -159,7 +160,7 @@ export default function Retirada() {
                     <Avatar nome={f.nome} />
                     <span className="item-textos">
                       <span className="item-titulo">{f.nome}</span>
-                      <span className="item-detalhe">Matrícula {f.matricula}{f.funcao && ` · ${f.funcao}`}</span>
+                      <span className="item-detalhe"><Matricula valor={f.matricula} />{f.funcao}</span>
                     </span>
                     <Icone nome="seta" className="item-seta" />
                   </button>
@@ -172,7 +173,7 @@ export default function Retirada() {
 
       {passo === "epi" && pessoa && (
         <section>
-          <CabecalhoPagina titulo="Qual EPI?" onVoltar={() => irPara("pessoa")} />
+          <CabecalhoPagina rotulo="Entrega de EPI" titulo="Qual EPI?" onVoltar={() => irPara("pessoa")} />
           <div className="escolha">
             <Avatar nome={pessoa.nome} />
             <span className="item-textos">
@@ -186,12 +187,13 @@ export default function Retirada() {
               const motivo = motivoBloqueio(e);
               return (
                 <li key={e.id}>
-                  <button className="item" disabled={!!motivo} onClick={() => { setEpi(e); irPara("pin"); }}>
-                    <span className="item-icone"><Icone nome="escudo" /></span>
+                  <button className={motivo ? "item bloqueado" : "item"} disabled={!!motivo} onClick={() => { setEpi(e); irPara("pin"); }}>
+                    <EtiquetaCA ca={e.ca} vencido={caVencido(e)} />
                     <span className="item-textos">
                       <span className="item-titulo">{e.nome}</span>
-                      <span className="item-detalhe">CA {e.ca} · {e.estoque} em estoque</span>
-                      {motivo && <span className="item-motivo"><Icone nome="alerta" tamanho={15} />{motivo}</span>}
+                      {motivo
+                        ? <span className="selos"><span className="selo erro"><Icone nome="alerta" tamanho={14} />{motivo}</span></span>
+                        : <span className="item-detalhe">{e.estoque} em estoque</span>}
                     </span>
                     {!motivo && <Icone nome="seta" className="item-seta" />}
                   </button>
@@ -219,7 +221,7 @@ export default function Retirada() {
 
       {passo === "assinar" && pessoa && epi && (
         <section>
-          <CabecalhoPagina titulo="Assinatura" subtitulo={`Entregue o celular para ${primeiroNome}.`} onVoltar={() => irPara("epi")} />
+          <CabecalhoPagina rotulo={`Passe o celular para ${primeiroNome}`} titulo="Assinatura" onVoltar={() => irPara("epi")} />
           <p className="declaracao">
             Eu, <strong>{pessoa.nome}</strong>, recebi <strong>1 {epi.nome}</strong> (CA {epi.ca}) e fui orientado sobre o uso correto.
           </p>
@@ -231,16 +233,20 @@ export default function Retirada() {
       )}
 
       {passo === "pronto" && recibo && pessoa && (
-        <section className="sucesso" aria-live="polite">
-          <div className="sucesso-icone" aria-hidden="true"><Icone nome="ok" tamanho={52} /></div>
-          <h1>Entrega registrada</h1>
-          <p className="suave" style={{ marginTop: 6 }}>O registro está salvo e não pode ser alterado.</p>
-          <dl className="recibo">
-            <div><dt>Funcionário</dt><dd>{pessoa.nome}</dd></div>
-            <div><dt>EPI</dt><dd>{recibo.epiNome}</dd></div>
-            <div><dt>CA</dt><dd>{recibo.ca}</dd></div>
-            <div><dt>Data e hora</dt><dd>{new Date(recibo.criadoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</dd></div>
-          </dl>
+        <section aria-live="polite">
+          <CabecalhoPagina rotulo="Registro salvo" titulo="Entrega feita" subtitulo="O registro não pode ser alterado nem apagado." />
+          <article className="comprovante">
+            <h2>Comprovante de entrega</h2>
+            <p className="numero">Nº {recibo.hash.slice(0, 8).toUpperCase()}</p>
+            <span className="carimbo" aria-hidden="true">ENTREGUE</span>
+            <dl>
+              <div><dt>Funcionário</dt><dd>{pessoa.nome}</dd></div>
+              <div><dt>Matrícula</dt><dd>{pessoa.matricula}</dd></div>
+              <div><dt>EPI</dt><dd>{recibo.epiNome}</dd></div>
+              <div><dt>CA</dt><dd>{recibo.ca}</dd></div>
+              <div><dt>Data</dt><dd>{new Date(recibo.criadoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</dd></div>
+            </dl>
+          </article>
           <button className="botao" onClick={recomecar}>
             <Icone nome="mais" /> Nova entrega
           </button>

@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/retirada",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#ffffff",
+    background_color: "#1a3a3a",
     theme_color: "#1a3a3a",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },

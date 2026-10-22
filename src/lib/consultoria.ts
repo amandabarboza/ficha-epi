@@ -3,6 +3,7 @@
 export const CONSULTORIA = {
   nome: "SOL Engenharia e Consultoria em Segurança do Trabalho",
   logo: "/marca/logo-sol.png",
+  logoNegativo: "/marca/logo-sol-negativo.png", // para fundo petróleo
   cnpj: "",
   endereco: "",
   telefone: "(16) 99353-4846",
